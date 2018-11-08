@@ -121,7 +121,7 @@ private[sql] object HivePrivObjsFromPlan {
         addTableOrViewLevelObjs(tableIdentifier, hivePrivilegeObjects, currentDb, mode = mode)
 
       case UnresolvedCatalogRelation(tableMeta) =>
-        handleProjectionForRelation(tableMeta)
+        handleProjectionForRelation(tableMeta, mode = mode)
 
       case View(_, output, child) =>
         buildUnaryHivePrivObjs(child, currentDb, hivePrivilegeObjects, hivePrivObjType, output)
