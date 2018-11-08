@@ -75,7 +75,7 @@ private[sql] object HivePrivObjsFromPlan {
      * Columns in Projection take priority for column level privilege checking
      * @param table catalogTable of a given relation
      */
-    def handleProjectionForRelation(table: CatalogTable, mode: SaveMode = SaveMode.ErrorIfExists): Unit = {
+    def handleProjectionForRelation(table: CatalogTable, mode: SaveMode): Unit = {
       if (projectionList == null) {
         addTableOrViewLevelObjs(
           table.identifier,
