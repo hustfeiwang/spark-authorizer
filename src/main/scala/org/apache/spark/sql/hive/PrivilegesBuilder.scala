@@ -238,7 +238,7 @@ private[sql] object PrivilegesBuilder {
 
       case c: CreateHiveTableAsSelectCommand =>
         addDbLevelObjs(c.tableDesc.identifier, outputObjs)
-        addTableOrViewLevelObjs(c.tableDesc.identifier, outputObjs)
+        addTableOrViewLevelObjs(c.tableDesc.identifier, outputObjs, mode = c.mode)
         buildQuery(c.query, inputObjs)
 
       case c: CreateTableCommand => addTableOrViewLevelObjs(c.table.identifier, outputObjs)
@@ -290,7 +290,8 @@ private[sql] object PrivilegesBuilder {
         i.logicalRelation.catalogTable.foreach { table =>
           addTableOrViewLevelObjs(
             table.identifier,
-            outputObjs)
+            outputObjs,
+            mode = overwriteToSaveMode(i.overwrite))
         }
         buildQuery(i.query, inputObjs)
 
@@ -317,10 +318,12 @@ private[sql] object PrivilegesBuilder {
 
       case i if i.nodeName == "InsertIntoHiveTable" =>
         addTableOrViewLevelObjs(
-          getFieldVal(i, "table").asInstanceOf[CatalogTable].identifier, outputObjs)
+          getFieldVal(i, "table").asInstanceOf[CatalogTable].identifier, outputObjs,
+          mode =overwriteToSaveMode(getFieldVal(i, "overwrite").asInstanceOf[Boolean]))
         buildQuery(getFieldVal(i, "query").asInstanceOf[LogicalPlan], inputObjs)
 
-      case l: LoadDataCommand => addTableOrViewLevelObjs(l.table, outputObjs)
+      case l: LoadDataCommand => addTableOrViewLevelObjs(l.table, outputObjs,
+        mode =overwriteToSaveMode(l.isOverwrite))
 
       case s if s.nodeName == "SaveIntoDataSourceCommand" =>
         buildQuery(getFieldVal(s, "query").asInstanceOf[LogicalPlan], outputObjs)
@@ -465,4 +468,19 @@ private[sql] object PrivilegesBuilder {
       case _ => HivePrivObjectActionType.OTHER
     }
   }
+
+  /**
+    * HivePrivObjectActionType INSERT or INSERT_OVERWRITE
+    * @param overwrite Append or overwrite
+    * @return
+    */
+  private def overwriteToSaveMode(overwrite: Boolean): SaveMode = {
+    if (overwrite) {
+      SaveMode.Overwrite
+    } else {
+      SaveMode.Append
+    }
+  }
+
+
 }
