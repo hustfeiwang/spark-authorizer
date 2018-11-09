@@ -319,11 +319,11 @@ private[sql] object PrivilegesBuilder {
       case i if i.nodeName == "InsertIntoHiveTable" =>
         addTableOrViewLevelObjs(
           getFieldVal(i, "table").asInstanceOf[CatalogTable].identifier, outputObjs,
-          mode =overwriteToSaveMode(getFieldVal(i, "overwrite").asInstanceOf[Boolean]))
+          mode = overwriteToSaveMode(getFieldVal(i, "overwrite").asInstanceOf[Boolean]))
         buildQuery(getFieldVal(i, "query").asInstanceOf[LogicalPlan], inputObjs)
 
       case l: LoadDataCommand => addTableOrViewLevelObjs(l.table, outputObjs,
-        mode =overwriteToSaveMode(l.isOverwrite))
+        mode = overwriteToSaveMode(l.isOverwrite))
 
       case s if s.nodeName == "SaveIntoDataSourceCommand" =>
         buildQuery(getFieldVal(s, "query").asInstanceOf[LogicalPlan], outputObjs)
